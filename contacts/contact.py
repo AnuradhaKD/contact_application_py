@@ -1,20 +1,29 @@
 # import need module from tkinter
+from multiprocessing.pool import TERMINATE
 from tkinter import Tk, Button, PhotoImage, Label, LabelFrame, W, E, N, S, Entry, END, StringVar, Scrollbar,Toplevel, Widget, font
+
 # provides access to Tk themed Widgets
 from tkinter import ttk
+#import db
 import sqlite3
+
+import sys
 
 class Contacts:
 
+    #--------------------------------------Create database--------------------------------------
     db_filename = 'contacts.db'
 
+    #init
     def __init__(self, root):
         self.root = root
         self.create_gui()
         ttk.style = ttk.Style()
         ttk.style.configure("Treeview", font=('helvetica', 10))
         ttk.style.configure("Treeview.Heading", font=('helvetica', 12, 'bold'))
-
+        
+        
+    #--------------------------------------execute database--------------------------------------
     def execute_db_query(self, query, parameters=()) :
         with sqlite3.connect(self.db_filename) as conn:
             print(conn)
@@ -24,6 +33,7 @@ class Contacts:
             conn.commit()
         return query_result
 
+    #--------------------------------------set gui interface--------------------------------------
     def create_gui(self):
         self.create_left_icon()
         self.create_label_frame()
@@ -34,14 +44,17 @@ class Contacts:
         self.view_contacts()
         self.delete_contacts()
 
+    # --------------------------------------left icon--------------------------------------
     def create_left_icon(self):
-        photo = PhotoImage(file='icons/logo_1.gif')
+        photo = PhotoImage(file="icons/logo_1.gif")
         label = Label(image = photo)
         label.image = photo
         label.grid(row = 0, column = 0)
-
+        
+    #--------------------------------------create labels--------------------------------------
     def create_label_frame(self):
         labelframe = LabelFrame(self.root, text='Create New Contact', bg="sky blue", font="helvetica 10")
+        Label(labelframe, text='Name', bg="green", fg="white").grid(row=1, column=1, sticky=W, padx=15, pady=2)
         labelframe.grid(row=0, column=1, padx=8, pady=8, sticky='ew')
         Label(labelframe, text='Name', bg="green", fg="white").grid(row=1, column=1, sticky=W, padx=15, pady=2)
         self.namefield = Entry(labelframe)
@@ -54,6 +67,7 @@ class Contacts:
         self.numfield.grid(row=3, column=2, sticky=W, padx=5, pady=2)
         Button(labelframe, text="Add Contact", command=self.on_add_contact_button_clicked, bg="blue", fg="white").grid(row=4, column=2, sticky=E, padx=5, pady=5)
 
+    #--------------------------------------msg area--------------------------------------
     def create_msg_area(self):
         self.message = Label(text='', fg='red')
         self.message.grid(row=3, column=1, sticky=W)
@@ -69,10 +83,11 @@ class Contacts:
         self.scrollbar = Scrollbar(orient='vertical', command=self.tree.yview)
         self.scrollbar.grid(row=6, column=3, rowspan=10, sticky='sn')
 
+    #--------------------------------------buttons--------------------------------------
     def create_bottom_buttons(self):
-        Button(text='Delete Selected', command=self.on_delete_selected_button_clicked, bg="red", fg="white").grid(row=8, column=0, sticky=W, padx=20, pady=10)
+        Button(text='Delete Selected', command=self.on_delete_selected_button_clicked, bg="green", fg="white").grid(row=8, column=0, sticky=W, padx=20, pady=10)
         Button(text='Modify Selected', command=self.on_modify_selected_button_clicked, bg="purple", fg="white").grid(row=8, column=1, sticky=W)
-
+        
     def on_add_contact_button_clicked(self):
         self.add_new_contact()
 
@@ -95,10 +110,10 @@ class Contacts:
         
         self.open_modify_window()
 
-
     def new_contacts_vallidated(self):
         return len(self.namefield.get()) != 0 and len(self.emailfield.get()) != 0 and len(self.numfield.get()) != 0
-
+    
+    #--------------------------------------View--------------------------------------
     def view_contacts(self):
         items = self.tree.get_children()
         for item in items:
@@ -108,6 +123,7 @@ class Contacts:
         for row in contact_entries:
             self.tree.insert('', 0, text=row[1], values=(row[2], row[3]))
 
+        #--------------------------------------adding new--------------------------------------
     def add_new_contact(self):
         if self.new_contacts_vallidated():
             query = 'INSERT INTO contact_list VALUES(NULL, ?, ?, ?)'
@@ -123,6 +139,7 @@ class Contacts:
             self.message['text'] = 'name, email and number cannot be blank'
             self.view_contacts()
 
+    #--------------------------------------delete contact--------------------------------------
     def delete_contacts(self):
         self.message['text'] = ''
         name = self.tree.item(self.tree.selection())['text']
@@ -131,6 +148,7 @@ class Contacts:
         self.message['text'] = 'Contacts for {} deleted '.format(name)
         self.view_contacts()
 
+    #--------------------------------------Modify window--------------------------------------
     def open_modify_window(self):
         name = self.tree.item(self.tree.selection())['text']
         old_number = self.tree.item(self.tree.selection())['values'][1]
@@ -158,6 +176,7 @@ class Contacts:
         self.view_contacts()
 
 
+#--------------------------------------main--------------------------------------
 if __name__ == '__main__':
     root = Tk()
     root.title("My Contact List")
