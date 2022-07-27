@@ -7,8 +7,6 @@ from tkinter import ttk
 #import db
 import sqlite3
 
-import sys
-
 class Contacts:
 
     #--------------------------------------Create database--------------------------------------
